@@ -1,5 +1,5 @@
-/* A very basic HTTP/1.1[1]-compatible-ish parser/serializer for use in this
- * server only and never in any production environment
+/* A very basic HTTP/1.1[1]-compatible-ish parser for use in this server only
+ * and never in any production environment
  *
  * [1] Fielding, R., Ed., Nottingham, M., Ed., and J. Reschke, Ed., "HTTP/1.1",
  * STD 99, RFC 9112, June 2022, <https://www.rfc-editor.org/info/std99>.
@@ -24,7 +24,7 @@ enum Method {
 	Other
 };
 
-/* Parse an HTTP method from the given string. Returns Other if the method is
+/* Parse an HTTP method from the given string. Returns `Other` if the method is
  * not known or unsupported.
  */
 enum Method method_from_str(char* str);
@@ -63,7 +63,8 @@ struct Request {
 bool parse_request(const char* text_req, struct Request* req);
 
 /* Handle an HTTP request using the provided request information in `req`.
- * Returns true if the request was handled without server error (2XX or 3XX).
+ * Returns true if the request was handled without server error (HTTP status
+ * code 2XX/3XX/4XX, and no fatal errors in the handlers).
  */
 bool handle_request(struct Request* req, Socket sock, char* data_dir);
 

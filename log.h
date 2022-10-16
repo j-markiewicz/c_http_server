@@ -14,8 +14,8 @@ enum Level {
 	Trace
 };
 
-/* Return the corresponding string for the provided log_msg level. The returned
- * string is always 5 characters long (not including the null terminator)
+/* Return the corresponding string for the provided `log_msg` level. The
+ * returned string is always 5 characters long (plus the null terminator)
  */
 const char* level_to_str(enum Level level);
 
@@ -25,24 +25,24 @@ const char* level_to_str(enum Level level);
  */
 bool rfc3339_timestamp(char* buf, size_t len);
 
-/* Print a null-terminated log_msg message without newline character to the
+/* Print a null-terminated log_msg message (without newline character) to the
  * standard output, returning whether the operation was completed successfully
  */
 bool log_msg(enum Level level, const char* message);
 
-/* Print an error-level null-terminated log_msg message to stdout */
+/* Print an error-level null-terminated `log_msg` message to stdout */
 void error(const char* message);
 
-/* Print a warn-level null-terminated log_msg message to the standard output */
+/* Print a warn-level null-terminated `log_msg` message to stdout */
 void warn(const char* message);
 
-/* Print an info-level null-terminated log_msg message to the standard output */
+/* Print an info-level null-terminated `log_msg` message to stdout */
 void info(const char* message);
 
-/* Print a debug-level null-terminated log_msg message to the standard output */
+/* Print a debug-level null-terminated `log_msg` message to stdout */
 void debug(const char* message);
 
-/* Print a trace-level null-terminated log_msg message to the standard output */
+/* Print a trace-level null-terminated `log_msg` message to stdout */
 void trace(const char* message);
 
 #endif

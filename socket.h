@@ -33,7 +33,7 @@ typedef int32_t Socket;
 void close_socket(Socket sock);
 
 /* Create a new dual-stack (IPv4 and IPv6) TCP socket using the provided port.
- * The returned socket will ready to accept new connections. If an error
+ * The returned socket will be ready to accept new connections. If an error
  * occurs, this function will stop the server.
  */
 Socket create_socket(uint16_t listen_port);
@@ -54,15 +54,15 @@ struct Buffer {
 	uint8_t* buf;
 };
 
-/* Create a new buffer with length 0 and capacity cap (or a default capacity
- * if cap is 0). The buffer should be freed with `free_buffer` after use.
+/* Create a new buffer with length 0 and capacity `cap` (or a default capacity
+ * if `cap` is 0). The buffer should be freed with `free_buffer` after use.
  */
 struct Buffer new_buffer(size_t cap);
 
 /* Free the given buffer */
 void free_buffer(struct Buffer buf);
 
-/* Convert the given buffer to a C string, shrinking the allocation of `buf.len`
+/* Convert the given buffer to a C string, shrinking the allocation to `buf.len`
  * if possible. The contents of the buffer are returned as-is, but with the
  * addition of a null terminator. If the buffer is full and can not be
  * reallocated, the last byte is overwritten with the null terminator. The
@@ -73,7 +73,7 @@ char* buffer_to_str(struct Buffer buf);
 
 /* Receive up to `buf.cap` bytes into the provided buffer from the given
  * socket. On success, this returns true and `buf` will hold `buf.len`
- * received bytes. On failure false is returned, and buf will have length 0.
+ * received bytes. On failure, false is returned and `buf` will have length 0.
  * If no data is received (e.g. because the socket is closed), but there weren't
  * any errors, true is returned, but `buf.len` will be 0.
  */
