@@ -2,7 +2,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -34,14 +33,13 @@ bool rfc3339_timestamp(char* buf, size_t len) {
 }
 
 bool log_msg(enum Level level, const char* message) {
-	/* TODO: logging with format strings? */
 	char timestamp[21] = {0};
+	int32_t res;
 	if (!rfc3339_timestamp(timestamp, sizeof(timestamp))) {
 		return false;
 	}
 
-	int32_t res = printf("%s - %s: %s\n", level_to_str(level), timestamp,
-	                     message);
+	res = printf("%s - %s: %s\n", level_to_str(level), timestamp, message);
 	if (res < 0) {
 		return false;
 	}

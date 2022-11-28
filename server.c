@@ -1,27 +1,9 @@
-/* A simple HTTP web server as a (maybe) University project
+/* A simple HTTP web server as a University project
+ * 
+ * To compile and start, run "gcc -o server main.c && ./server -d test-data".
  *
- * This as-of-yet unnamed server will serve files from a directory, mapping
- * request URLs to file paths and serving those files.
- *
- * Goals:
- * - Be simple
- * - Use ANSI C only
- * - Work on Windows 10/11 and Linux (Ubuntu 18.04/22.04)
- * - Be fully written by me (maybe with a bit of help from stackoverflow)
- * - Compile with just `gcc -ansi main.c`
- * - No external dependencies (other than the standard library)
- * - Work with modern web browsers
- * - Moderate HTTP spec-compliance
- *
- * Non-goals:
- * - Be fully-featured
- * - Be cross-platform
- * - Be safe and/or secure (don't even think about exposing this publicly)
- * - Handle malformed or malicious inputs
- * - Follow any best practices regarding HTTP
- * - Handle most edge cases (even some expected ones)
- * - Fully implement HTTP (any version)
- * - Have advanced features
+ * This server will serve files from a directory, mapping request URLs to file
+ * paths and serving those files.
  */
 
 #include <unistd.h>
@@ -30,6 +12,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "misc.h"
 #include "log.h"
@@ -88,7 +71,11 @@ int32_t main(int32_t argc, char** argv) {
 	memset(data_dir, 0, path_max_len);
 
 	if (listen_port_str != NULL) {
+		#ifdef WIN32
 		uint64_t parsed = strtoull(listen_port_str, NULL, 10);
+		#else
+		uint64_t parsed = strtoul(listen_port_str, NULL, 10);
+		#endif
 		if (parsed == 0 || parsed >= (2 << 16)) {
 			warn("Invalid listen port (-p) specified");
 		} else {

@@ -3,6 +3,9 @@
 #include "socket.h"
 
 #include <stdio.h>
+#include <unistd.h>
+#include <memory.h>
+#include <stdlib.h>
 
 #include "log.h"
 #include "misc.h"
@@ -29,6 +32,13 @@ Socket create_socket(uint16_t listen_port) {
 	}
 	#endif
 
+	/* `sockopt` boolean definitions, must be `int`s, passed as `char*` */
+	int so_true_int = 1;
+	char* so_true = (char*) &so_true_int;
+	int so_false_int = 0;
+	char* so_false = (char*) &so_false_int;
+	int so_size = sizeof(int);
+
 	struct sockaddr_in6 listen_addr = {0};
 	/* Set the address to ::1 (localhost) */
 	memset(&listen_addr.sin6_addr, 0, sizeof(listen_addr.sin6_addr));
@@ -54,13 +64,6 @@ Socket create_socket(uint16_t listen_port) {
 	}
 	#endif
 
-	/* sockopt boolean definitions, must be `int`s, passed as `char*` */
-	int so_true_int = 1;
-	char* so_true = (char*) &so_true_int;
-	int so_false_int = 0;
-	char* so_false = (char*) &so_false_int;
-	int so_size = sizeof(int);
-
 	/* `SO_REUSEADDR` has different meanings across platforms:
 	 * - On Windows, it allows multiple listeners per socket (which is very bad)
 	 * - On Unix-like OSs, it allows a process to bind to a recently-closed
@@ -84,7 +87,7 @@ Socket create_socket(uint16_t listen_port) {
 
 bool accept_connection(Socket sock, Socket* incoming) {
 	struct sockaddr_in6 addr;
-	int32_t addr_size = sizeof(addr);
+	socklen_t addr_size = sizeof(addr);
 	Socket res = accept(sock, (struct sockaddr*) &addr, &addr_size);
 	#ifdef _WIN32
 	if (res == INVALID_SOCKET || addr_size > sizeof(addr)) {
@@ -100,7 +103,12 @@ bool accept_connection(Socket sock, Socket* incoming) {
 	char trace_buf[103];
 	sprintf(trace_buf, "Accepted a new connection from "
 	                   "[%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x]:%d (socket "
-	                   "%llu)", ntohs(((uint16_t*) (&addr.sin6_addr))[0]),
+					   #ifdef WIN32
+	                   "%llu)"
+					   #else
+					   "%lu)"
+					   #endif
+					   , ntohs(((uint16_t*) (&addr.sin6_addr))[0]),
 	        ntohs(((uint16_t*) (&addr.sin6_addr))[1]),
 	        ntohs(((uint16_t*) (&addr.sin6_addr))[2]),
 	        ntohs(((uint16_t*) (&addr.sin6_addr))[3]),
@@ -108,7 +116,7 @@ bool accept_connection(Socket sock, Socket* incoming) {
 	        ntohs(((uint16_t*) (&addr.sin6_addr))[5]),
 	        ntohs(((uint16_t*) (&addr.sin6_addr))[6]),
 	        ntohs(((uint16_t*) (&addr.sin6_addr))[7]), ntohs(addr.sin6_port),
-	        res);
+	        (uint64_t) res);
 	debug(trace_buf);
 
 	return true;
@@ -152,7 +160,13 @@ bool receive(Socket sock, struct Buffer* buf) {
 	}
 
 	char trace_buf[61];
-	sprintf(trace_buf, "Received %d bytes on socket %llu", res, sock);
+	sprintf(trace_buf, "Received %d bytes on socket "
+	#ifdef WIN32
+	"%llu"
+	#else
+	"%lu"
+	#endif
+	, res, (uint64_t) sock);
 	trace(trace_buf);
 
 	buf->len = res;

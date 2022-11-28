@@ -4,6 +4,7 @@
 
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "socket.h"
 #include "log.h"
@@ -140,9 +141,6 @@ bool parse_request(const char* text_req, struct Request* req) {
 
 	free(path_str);
 
-	/* TODO: parse headers? */
-	/* TODO: parse request body? */
-
 	return true;
 }
 
@@ -175,7 +173,9 @@ char* guess_mime_type(const char* file_ext) {
 	/* Below code generated based on data from
 	 * https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
 	 */
-	if (strcmp(file_ext, ".aac") == 0) {
+	if (file_ext == NULL) {
+		return "application/octet-stream";
+	} else if (strcmp(file_ext, ".aac") == 0) {
 		return "audio/aac";
 	} else if (strcmp(file_ext, ".abw") == 0) {
 		return "application/x-abiword";
@@ -213,8 +213,7 @@ char* guess_mime_type(const char* file_ext) {
 		return "application/gzip";
 	} else if (strcmp(file_ext, ".gif") == 0) {
 		return "image/gif";
-	} else if (strcmp(file_ext, ".htm") == 0 ||
-	           strcmp(file_ext, ".html") == 0) {
+	} else if (strcmp(file_ext, ".htm") == 0 || strcmp(file_ext, ".html") == 0) {
 		return "text/html";
 	} else if (strcmp(file_ext, ".ico") == 0) {
 		return "image/vnd.microsoft.icon";
@@ -222,8 +221,7 @@ char* guess_mime_type(const char* file_ext) {
 		return "text/calendar";
 	} else if (strcmp(file_ext, ".jar") == 0) {
 		return "application/java-archive";
-	} else if (strcmp(file_ext, ".jpeg") == 0 ||
-	           strcmp(file_ext, ".jpg") == 0) {
+	} else if (strcmp(file_ext, ".jpeg") == 0 || strcmp(file_ext, ".jpg") == 0) {
 		return "image/jpeg";
 	} else if (strcmp(file_ext, ".js") == 0 || strcmp(file_ext, ".mjs") == 0) {
 		return "text/javascript";
@@ -231,8 +229,7 @@ char* guess_mime_type(const char* file_ext) {
 		return "application/json";
 	} else if (strcmp(file_ext, ".jsonld") == 0) {
 		return "application/ld+json";
-	} else if (strcmp(file_ext, ".mid") == 0 ||
-	           strcmp(file_ext, ".midi") == 0) {
+	} else if (strcmp(file_ext, ".mid") == 0 || strcmp(file_ext, ".midi") == 0) {
 		return "audio/midi";
 	} else if (strcmp(file_ext, ".mp3") == 0) {
 		return "audio/mpeg";
@@ -278,8 +275,7 @@ char* guess_mime_type(const char* file_ext) {
 		return "image/svg+xml";
 	} else if (strcmp(file_ext, ".tar") == 0) {
 		return "application/x-tar";
-	} else if (strcmp(file_ext, ".tif") == 0 ||
-	           strcmp(file_ext, ".tiff") == 0) {
+	} else if (strcmp(file_ext, ".tif") == 0 || strcmp(file_ext, ".tiff") == 0) {
 		return "image/tiff";
 	} else if (strcmp(file_ext, ".ts") == 0) {
 		return "video/mp2t";

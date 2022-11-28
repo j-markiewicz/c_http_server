@@ -3,6 +3,9 @@
 #include "handlers.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <dirent.h>
 
 #ifndef _WIN32
 #include <sys/sendfile.h>
@@ -20,7 +23,7 @@ uint16_t handle_get(struct Path path, Socket sock, char* data_dir) {
 	}
 
 	size_t data_dir_len = strlen(data_dir);
-	char* file_path = malloc(data_dir_len + path_len + path.num_components);
+	char* file_path = malloc(data_dir_len + path_len + path.num_components + 11);
 	strcpy(file_path, data_dir);
 	char* file_path_cursor = file_path + data_dir_len;
 	for (i = 0; i < path.num_components; i++) {
@@ -31,6 +34,17 @@ uint16_t handle_get(struct Path path, Socket sock, char* data_dir) {
 		file_path_cursor++;
 	}
 	file_path_cursor[-1] = '\0';
+
+	/* If the path is a directory, try `[path]/index.html` */
+	DIR* dir = opendir(file_path);
+	if (dir) {
+		closedir(dir);
+		if (file_path[strlen(file_path) - 1] == '/') {
+			strcat(file_path, "index.html");
+		} else {
+			strcat(file_path, "/index.html");
+		}
+	}
 
 	/* Read file */
 	FILE* file = fopen(file_path, "rb");
@@ -51,13 +65,18 @@ uint16_t handle_get(struct Path path, Socket sock, char* data_dir) {
 	rewind(file);
 
 	/* Guess MIME type from file extension */
-	char* path_ext = strrchr(path.components[path.num_components - 1], '.');
+	char* path_ext = strrchr(file_path, '.');
 	char* mime_type = guess_mime_type(path_ext);
 
 	/* Send status and headers */
 	char* buf = malloc(74 + strlen(mime_type));
-	sprintf(buf, "HTTP/1.1 200 OK\r\nContent-Length: %llu\r\nContent-Type: "
-	             "%s\r\n\r\n", file_size, mime_type);
+	sprintf(buf, "HTTP/1.1 200 OK\r\nContent-Length: "
+	#ifdef WIN32
+	"%llu"
+	#else
+	"%lu"
+	#endif
+	"\r\nContent-Type: %s\r\n\r\n", (uint64_t) file_size, mime_type);
 	size_t buf_len = strlen(buf);
 
 	int32_t res = send(sock, buf, (int) buf_len, 0);
